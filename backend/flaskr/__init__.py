@@ -85,16 +85,38 @@ def create_app(test_config=None):
         })
     
 
-        
 
-
+    #-----------------------------------------------------------
+    # DELETE question
+    #-----------------------------------------------------------
     '''
-    @TODO: 
-    Create an endpoint to DELETE question using a question ID. 
-
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page. 
     '''
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            # get question by id, use one_or_none to only turn one result or call exception if none selected
+            question = Question.query.filter_by(id=id).one_or_none()
+
+            # abort if question not found
+            if question is None:
+                abort(404)
+
+            #delete
+            question.delete()
+
+            #  return success message 
+            return jsonify({
+                'success': True,
+                'deleted': id
+            })
+        except:
+            #abort if there's a problem deleting the question 
+            abort(422)
+            
+
+
 
     '''
     @TODO: 
