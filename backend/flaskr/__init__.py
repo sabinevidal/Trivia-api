@@ -102,11 +102,10 @@ def create_app(test_config=None):
             # abort if question not found
             if question is None:
                 abort(404)
-
-            #delete
+            
+            # delete and return success message 
             question.delete()
 
-            #  return success message 
             return jsonify({
                 'success': True,
                 'deleted': id
@@ -115,19 +114,47 @@ def create_app(test_config=None):
             #abort if there's a problem deleting the question 
             abort(422)
             
-
-
-
+    #-----------------------------------------------------------
+    # Create question with POST
+    #-----------------------------------------------------------
     '''
-    @TODO: 
-    Create an endpoint to POST a new question, 
-    which will require the question and answer text, 
-    category, and difficulty score.
-
     TEST: When you submit a question on the "Add" tab, 
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.  
     '''
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        # load request body and data
+        body = request.get_json()
+        
+        new_question = body.get('question')
+        new_answer = body.get('answer')
+        new_difficulty = body.get('difficulty')
+        new_category = body.get('category')
+
+        # ensure all fields are filled
+        if ((new_question is None) or (new_answer is None) or (new_difficulty is None) or (new_category is None)):
+            flash("Make sure all fields are filled")
+            abort(422)
+
+        try:
+            # Create and insert new question
+            question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+            question.insert()
+
+            #get all questions and paginate
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+
+            return jsonify({
+                'success': True,
+                'created': question.id,
+                'question_created': question.question,
+                'questions': current_questions,
+                'total_questions': len(Question.query.all())
+            })
+        except:
+            abort(422)
 
     '''
     @TODO: 
