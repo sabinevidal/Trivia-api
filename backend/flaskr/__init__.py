@@ -31,8 +31,8 @@ def create_app(test_config=None):
     # CORS headers to set access control
     @app.after_request
     def after_request(response):
-        response.header.add('Access-Control-Allow-Headers','Content-Type, Authorization')
-        response.header.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers','Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
         return response
 
     # -------------------------------------------------------------------------------------
@@ -156,27 +156,71 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    #-----------------------------------------------------------
+    # Search questions
+    #-----------------------------------------------------------
     '''
-    @TODO: 
-    Create a POST endpoint to get questions based on a search term. 
-    It should return any questions for whom the search term 
-    is a substring of the question. 
-
     TEST: Search by any phrase. The questions list will update to include 
     only question that include that string within their question. 
     Try using the word "title" to start. 
     '''
 
-    '''
-    @TODO: 
-    Create a GET endpoint to get questions based on category. 
+    @app.route('/questions/search', methods=['POST'])
+    def search_question():
+        # Get user input
+        searchTerm = request.form.get('searchTerm', '')
+        data = request.get_json()
 
+        # apply filter for question string and check if there are results
+        try: 
+            selection = db.session.query(Question).filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
+            
+            if (len(selection) == 0):
+                abort(404)
+
+            #paginate and return results 
+            paginated = paginate_questions(request,selection)
+
+            return jsonify({
+                'success': True,
+                'questions': paginated,
+                'total_questions': len(Question.query.all())
+            })
+        except:
+            abort(404)
+
+    #-----------------------------------------------------------
+    # GET questions based on category
+    #-----------------------------------------------------------
+    '''
     TEST: In the "List" tab / main screen, clicking on one of the 
     categories in the left column will cause only questions of that 
     category to be shown. 
     '''
+    @app.route('/categories/<int:category_id>/questions')
+    def get_category_questions(category_id):
+        # Get category by id, try get questions from matching category
+        category = Category.query.filter(Category.id == category_id).first()
+        
+        try: 
+            #get questions matching the category
+            selection = Question.query.filter_by(category=category_id).all()
 
+            #paginate selected questions and return results
+            paginated = paginate_questions(request, selection)
 
+            return jsonify({
+                'success': True,
+                'questions': paginated,
+                'total_questions': len(Question.query.all()),
+                'current_category': category.type
+            })
+        except:
+            abort(400)
+
+    #-----------------------------------------------------------
+    # Quiz play using POST
+    #-----------------------------------------------------------
     '''
     @TODO: 
     Create a POST endpoint to get questions to play the quiz. 
@@ -188,6 +232,36 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not. 
     '''
+
+    @app.route('/quizzes', methods=['POST'])
+    def get_quiz():
+        body = request.get_json()
+
+        previous = body.get('previous_questions')
+
+        category = body.get('quiz_category')
+
+        #load all questions if 'all' is selected
+        if (category['id'] == 0):
+            questions = Question.query.all()
+        #load questions for given category
+        else:
+            questions = Question.query.filter_by(category=category['id'].all())
+
+        # get total number of questions
+
+        #pick a random question
+
+
+        #check if question has already been used
+
+        #get random question
+
+        #check if used, execute until new question
+
+            #if all questions used, return success message with no question
+
+        #return question
 
     '''
     @TODO: 
