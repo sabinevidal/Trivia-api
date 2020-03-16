@@ -31,9 +31,10 @@ def create_app(test_config=None):
     # CORS headers to set access control
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Headers','Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Headers','Content-Type, Authorization, true')
         response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
         return response
+
 
     # -------------------------------------------------------------------------------------
     # GET requests
@@ -65,24 +66,31 @@ def create_app(test_config=None):
         selection = Question.query.all()
         total_questions = len(selection)
         current_questions = paginate_questions(request, selection)
-
-        # get categories, add to dict
-        categories = Category.query.all()
-        categories_dict = {}
-        for category in categories:
-            categories_dict[category.id] = category.type
-
+        
         # abort if no questions
         if (len(current_questions) == 0):
             abort(404) 
+        
+        try:
+            # get categories, add to dict
+            categories = Category.query.all()
+            categories_dict = {}
+            for category in categories:
+                categories_dict[category.id] = category.type
 
-        #return all required data to view
-        return jsonify({
-            'success': True,
-            'questions': current_questions,
-            'total_questions': total_questions,
-            'categories': categories_dict
-        })
+            #return all required data to view
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions': total_questions,
+                'categories': categories_dict
+            })
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            abort(422)
+        finally:
+            db.session.close()
     
 
 
@@ -213,7 +221,7 @@ def create_app(test_config=None):
                 'success': True,
                 'questions': paginated,
                 'total_questions': len(Question.query.all()),
-                'current_category': category.type
+                'current_category': Category.type
             })
         except:
             abort(400)
@@ -237,16 +245,38 @@ def create_app(test_config=None):
     def get_quiz():
         body = request.get_json()
 
-        previous = body.get('previous_questions')
+        quiz = Question.query
 
-        category = body.get('quiz_category')
+        # filter by category id if a category is selected
+        if body['quiz_category']['id']:
+            quiz = quiz.filter(Question.category == body['quiz_category']['id'])
 
-        #load all questions if 'all' is selected
-        if (category['id'] == 0):
-            questions = Question.query.all()
-        #load questions for given category
-        else:
-            questions = Question.query.filter_by(category=category['id'].all())
+        #filter out questions already done, and filter by random selection of id
+        quiz = quiz.filter(Question.id.notin_(body['previous_questions'])).filter(Question.id.random.randrange(0, len(quiz), 1))
+        question = quiz.first()
+        return_data = {
+            'question': {
+                'id': question.id,
+                'question': question.question,
+                'answer': question.answer,
+                'category': question.category,
+                'difficulty': question.difficulty
+            }
+        }
+
+        return jsonify(return_data)
+  
+  ######################## 
+        # previous = body.get('previous_questions')
+
+        # category = body.get('quiz_category')
+
+        # #load all questions if 'all' is selected
+        # if (category['id'] == 0):
+        #     questions = Question.query.all()
+        # #load questions for specific category
+        # else:
+        #     questions = Question.query.filter_by(category=category['id'].all())
 
         # get total number of questions
 
