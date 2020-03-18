@@ -243,28 +243,58 @@ def create_app(test_config=None):
 
     @app.route('/quizzes', methods=['POST'])
     def get_quiz():
+        # try: 
         body = request.get_json()
 
-        quiz = Question.query
+        previous_q = body['previous_questions']
+        category_id = body["quiz_category"]["id"]
+        if category_id == 0:
+            if previous_q is not None:
+                questions = Question.query.filter(
+                    Question.id.notin_('previous_q')).all()
+            else: 
+                questions = Question.query.all()
+        else:
+            category = Category.query.get(category_id)
+            if previous_q is not None:
+                questions = Question.query.filter(
+                    Question.id.notin_(previous_q),
+                    Question.category == category_id).all()
+            else: 
+                questions = Question.query.filter( Question.category == category.id).all()
+        next_question = random.choice(questions).format()
+        if next_question is None:
+            next_question = False
+        return jsonify({
+            'success': True,
+            'question': next_question
+        })
 
-        # filter by category id if a category is selected
-        if body['quiz_category']['id']:
-            quiz = quiz.filter(Question.category == body['quiz_category']['id'])
+        # except Exception as ex:
+        #     abort(404)
+           
+           
+            # quiz = Question.query
 
-        #filter out questions already done, and filter by random selection of id
-        quiz = quiz.filter(Question.id.notin_(body['previous_questions'])).filter(Question.id.random.randrange(0, len(quiz), 1))
-        question = quiz.first()
-        return_data = {
-            'question': {
-                'id': question.id,
-                'question': question.question,
-                'answer': question.answer,
-                'category': question.category,
-                'difficulty': question.difficulty
-            }
-        }
+            # # filter by category id if a category is selected
+            # if body['quiz_category']['id']:
+            #     print("body and question" + body['quiz_category'])
+            #     quiz = quiz.filter(Question.category == body['quiz_category']['id'])
 
-        return jsonify(return_data)
+            # #filter out questions already done, and filter by random selection of id
+            # quiz = quiz.filter(Question.id.notin_(body['previous_questions'])).filter(Question.id.random.randrange(0, len(quiz), 1))
+            # question = quiz.first()
+            # return_data = {
+            #     'question': {
+            #         'id': question.id,
+            #         'question': question.question,
+            #         'answer': question.answer,
+            #         'category': question.category,
+            #         'difficulty': question.difficulty
+            #     }
+            # }
+
+            # return jsonify(return_data)
   
   ######################## 
         # previous = body.get('previous_questions')
@@ -293,12 +323,35 @@ def create_app(test_config=None):
 
         #return question
 
-    '''
-    @TODO: 
-    Create error handlers for all expected errors 
-    including 404 and 422. 
-    '''
+#-----------------------------------------------------------
+# Error Handlers
+#-----------------------------------------------------------
+
+    @app.errorhandler(400)
+    def bad_request_error(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }),400
     
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+        }),404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }),422
+
+
     return app
 
         
