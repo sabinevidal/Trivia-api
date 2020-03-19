@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+import json 
 
 from models import setup_db, Question, Category
 
@@ -26,7 +27,7 @@ def create_app(test_config=None):
     setup_db(app)
     
     # Set up CORS with '*' for origins
-    cors = CORS(app, resources={'/': {'origins': '*'}})
+    CORS(app, resources={'/': {'origins': '*'}})
 
     # CORS headers to set access control
     @app.after_request
@@ -135,6 +136,9 @@ def create_app(test_config=None):
         # load request body and data
         body = request.get_json()
         
+        if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
+            abort(422)
+
         new_question = body.get('question')
         new_answer = body.get('answer')
         new_difficulty = body.get('difficulty')
