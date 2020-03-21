@@ -7,6 +7,8 @@ import json
 
 from models import setup_db, Question, Category
 
+db = SQLAlchemy()
+
 QUESTIONS_PER_PAGE = 10
 
 # paginating questions
