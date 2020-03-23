@@ -51,8 +51,11 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'resource not found')
 
     def test_get_categories(self):
+        response = self.client().get('/categories')
+        data = json.loads(response.data)
 
-    def test_get_questions(self):
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
 
     def test_delete_question(self):
         """ Tests question delete success """
@@ -72,7 +75,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
 
-        self.asserEqual(data['deleted'], q_id)
+        self.assertEqual(data['deleted'], q_id)
 
         self.assertTrue(len(questions_before) - len(questions_after == 1))
 
@@ -80,8 +83,44 @@ class TriviaTestCase(unittest.TestCase):
         
 
     def test_create_question(self):
+        """Tests question creation"""
+        new_question = {
+            'question': 'new question',
+            'answer': 'new answer',
+            'difficulty': 1,
+            'category': 1
+        }
+
+        # get questions before post. Create question, load response data and get num questions after
+        questions_before = len(Question.query.all())
+
+        response = self.client.post('/questions', json=new_question)
+        data. json.loads(response.data)
+        questions_after = len(Question.query.all())
+
+        # check status code, success message and compare length before and after
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(questions_after, questions_before + 1)
+
+    def test_422_create_question(self):
+        """test failure of question creation error 422"""
+        # get num of questions before post, create question without json data, get num questions after
+        questions_before = len(Question.query.all())
+
+        response = self.client.post('/questions', json={}})
+        data. json.loads(response.data)
+        questions_after = len(Question.query.all())
+
+        # check status code, success message and compare length before and after
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertTrue(questions_before == questions_after)
 
     def test_search_question(self):
+        """test success fo searchin questions"""
+        # send post request with search term, load response data
+        response = self.client().post('/questions', json{'searchTerm': 'dogs'})
 
     def test_get_category_questions(self):
 
