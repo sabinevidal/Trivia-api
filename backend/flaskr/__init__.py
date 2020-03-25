@@ -126,11 +126,7 @@ def create_app(test_config=None):
     #-----------------------------------------------------------
     # Create question with POST
     #-----------------------------------------------------------
-    '''
-    TEST: When you submit a question on the "Add" tab, 
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.  
-    '''
+
     @app.route('/questions', methods=['POST'])
     def create_question():
         # load request body and data
@@ -198,11 +194,7 @@ def create_app(test_config=None):
     #-----------------------------------------------------------
     # GET questions based on category
     #-----------------------------------------------------------
-    '''
-    TEST: In the "List" tab / main screen, clicking on one of the 
-    categories in the left column will cause only questions of that 
-    category to be shown. 
-    '''
+
     @app.route('/categories/<int:id>/questions')
     def get_category_questions(id):
         # Get category by id, try get questions from matching category
@@ -227,17 +219,6 @@ def create_app(test_config=None):
     #-----------------------------------------------------------
     # Quiz play using POST
     #-----------------------------------------------------------
-    '''
-    @TODO: 
-    Create a POST endpoint to get questions to play the quiz. 
-    This endpoint should take category and previous question parameters 
-    and return a random questions within the given category, 
-    if provided, and that is not one of the previous questions. 
-
-    TEST: In the "Play" tab, after a user selects "All" or a category,
-    one question at a time is displayed, the user is allowed to answer
-    and shown whether they were correct or not. 
-    '''
 
     @app.route('/quizzes', methods=['POST'])
     def get_quiz():
@@ -268,7 +249,6 @@ def create_app(test_config=None):
             abort(422)
         
     
-
 #-----------------------------------------------------------
 # Error Handlers
 #-----------------------------------------------------------

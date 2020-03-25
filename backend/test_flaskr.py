@@ -36,7 +36,7 @@ class TriviaTestCase(unittest.TestCase):
     """
 
     def test_paginate_questions(self):
-        # Tests question pagination success
+        """Tests question pagination success"""
         response = self.client().get('/questions')
         data = json.loads(response.data)
 
@@ -44,6 +44,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
     def test_404_request_beyond_valid_page(self):
+         """ Tests error if user tries to access nonexistent page """
         response = self.client().get('/questions?page=1000')
         data = json.loads(response.data)
 
@@ -52,6 +53,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'resource not found')
 
     def test_get_categories(self):
+         """ Tests success of loading categories"""
         response = self.client().get('/categories')
         data = json.loads(response.data)
 
@@ -60,7 +62,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_delete_question(self):
         """ Tests question delete success """
-        #create a new question to be deleted
+        # create a new question to be deleted
         question = Question(question="is a test?", answer='yes', category=1, difficulty=1)
         question.insert()
         q_id = question.id
