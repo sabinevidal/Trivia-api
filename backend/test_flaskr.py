@@ -118,7 +118,8 @@ class TriviaTestCase(unittest.TestCase):
     def test_search_question(self):
         """test success fo searchin questions"""
         # send post request with search term, load response data
-        response = self.client().post('/questions', json={'searchTerm': 'palace'})
+        # new_search = {'searchTerm': 'a'}
+        response = self.client().post('/questions/search', json={'searchTerm': 'palace'})
         data = json.loads(response.data)
 
         # check status code, success message, that there are questions in the search results
@@ -126,11 +127,10 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertIsNotNone(data['questions'])
         self.assertIsNotNone(data['total_questions'])
-        self.assertIsNotNone(data['current_category'])
 
     def test_404_search_questions(self):
         """test for no search results 404"""
-        response = self.client().post('/questions', json={'searchTerm': ''})
+        response = self.client().post('/questions/search', json={'searchTerm': ''})
         data = json.loads(response.data)
 
         # check status code, false success message

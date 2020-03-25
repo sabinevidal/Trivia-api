@@ -171,11 +171,6 @@ def create_app(test_config=None):
     #-----------------------------------------------------------
     # Search questions
     #-----------------------------------------------------------
-    '''
-    TEST: Search by any phrase. The questions list will update to include 
-    only question that include that string within their question. 
-    Try using the word "title" to start. 
-    '''
 
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
@@ -183,23 +178,19 @@ def create_app(test_config=None):
         body = request.get_json()
         search_term = body.get('searchTerm', None)
 
-        # apply filter for question string and check if there are results
+        # If a search term has been entered, apply filter for question string and check if there are results
         try: 
-            # selection = db.session.query(Question).filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
-            
-            # if (len(selection) == 0):
-            #     abort(404)
-            # if search_term:
-            #     selection = Question.query.filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
-            #paginate and return results 
             if search_term:
                 selection = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+            
+            # paginate and return results 
+            paginated = paginate_questions(request,selection)
 
             return jsonify({
                 'success': True,
-                'questions':  [question.format() for question in search_results],
+                'questions':  paginated,
                 'total_questions': len(selection),
-                'current_category': Question.category
+                'current_category': None
             })
         except:
             abort(404)
