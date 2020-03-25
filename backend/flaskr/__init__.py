@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 import json 
+import sys
 
 from models import setup_db, Question, Category
 
@@ -100,12 +101,9 @@ def create_app(test_config=None):
     #-----------------------------------------------------------
     # DELETE question
     #-----------------------------------------------------------
-    '''
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page. 
-    '''
-    @app.route('/questions/<int:question_id>', methods=['DELETE'])
-    def delete_question(question_id):
+
+    @app.route('/questions/<int:id>', methods=['DELETE'])
+    def delete_question(id):
         try:
             # get question by id, use one_or_none to only turn one result or call exception if none selected
             question = Question.query.filter_by(id=id).one_or_none()
@@ -180,25 +178,28 @@ def create_app(test_config=None):
     '''
 
     @app.route('/questions/search', methods=['POST'])
-    def search_question():
+    def search_questions():
         # Get user input
-        searchTerm = request.form.get('searchTerm', '')
-        data = request.get_json()
+        body = request.get_json()
+        search_term = body.get('searchTerm', None)
 
         # apply filter for question string and check if there are results
         try: 
-            selection = db.session.query(Question).filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
+            # selection = db.session.query(Question).filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
             
-            if (len(selection) == 0):
-                abort(404)
-
+            # if (len(selection) == 0):
+            #     abort(404)
+            # if search_term:
+            #     selection = Question.query.filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
             #paginate and return results 
-            paginated = paginate_questions(request,selection)
+            if search_term:
+                selection = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
 
             return jsonify({
                 'success': True,
-                'questions': paginated,
-                'total_questions': len(Question.query.all())
+                'questions':  [question.format() for question in search_results],
+                'total_questions': len(selection),
+                'current_category': Question.category
             })
         except:
             abort(404)
@@ -211,14 +212,14 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that 
     category to be shown. 
     '''
-    @app.route('/categories/<int:category_id>/questions')
-    def get_category_questions(category_id):
+    @app.route('/categories/<int:id>/questions')
+    def get_category_questions(id):
         # Get category by id, try get questions from matching category
-        category = Category.query.filter(Category.id == category_id).first()
+        category = Category.query.filter_by(id=id).one_or_none()
         
         try: 
             #get questions matching the category
-            selection = Question.query.filter_by(category=category_id).all()
+            selection = Question.query.filter_by(category=category.id).all()
 
             #paginate selected questions and return results
             paginated = paginate_questions(request, selection)
@@ -227,7 +228,7 @@ def create_app(test_config=None):
                 'success': True,
                 'questions': paginated,
                 'total_questions': len(Question.query.all()),
-                'current_category': Category.type
+                'current_category': category.type
             })
         except:
             abort(400)
@@ -249,85 +250,33 @@ def create_app(test_config=None):
 
     @app.route('/quizzes', methods=['POST'])
     def get_quiz():
-        # try: 
-        body = request.get_json()
+        try:
+            body = request.get_json()
 
-        previous_q = body['previous_questions']
-        category_id = body["quiz_category"]["id"]
-        if category_id == 0:
-            if previous_q is not None:
-                questions = Question.query.filter(
-                    Question.id.notin_('previous_q')).all()
-            else: 
-                questions = Question.query.all()
-        else:
-            category = Category.query.get(category_id)
-            if previous_q is not None:
-                questions = Question.query.filter(
-                    Question.id.notin_(previous_q),
-                    Question.category == category_id).all()
-            else: 
-                questions = Question.query.filter( Question.category == category.id).all()
-        next_question = random.choice(questions).format()
-        if next_question is None:
-            next_question = False
-        return jsonify({
-            'success': True,
-            'question': next_question
-        })
+            category = body.get('quiz_category')
+            previous_questions = body.get('previous_questions')
 
-        # except Exception as ex:
-        #     abort(404)
-           
-           
-            # quiz = Question.query
+            # If 'ALL' categories is 'clicked', filter available Qs 
+            if category['type'] == 'click':
+                available_questions = Question.query.filter(
+                    Question.id.notin_((previous_questions))).all()
+            # Filter available questions by chosen category and unused questions
+            else:
+                available_questions = Question.query.filter_by(
+                    category=category['id']).filter(Question.id.notin_((previous_questions))).all()
 
-            # # filter by category id if a category is selected
-            # if body['quiz_category']['id']:
-            #     print("body and question" + body['quiz_category'])
-            #     quiz = quiz.filter(Question.category == body['quiz_category']['id'])
+            # randomly select next question from available questions
+            new_question = available_questions[random.randrange(
+                0, len(available_questions))].format() if len(available_questions) > 0 else None
 
-            # #filter out questions already done, and filter by random selection of id
-            # quiz = quiz.filter(Question.id.notin_(body['previous_questions'])).filter(Question.id.random.randrange(0, len(quiz), 1))
-            # question = quiz.first()
-            # return_data = {
-            #     'question': {
-            #         'id': question.id,
-            #         'question': question.question,
-            #         'answer': question.answer,
-            #         'category': question.category,
-            #         'difficulty': question.difficulty
-            #     }
-            # }
-
-            # return jsonify(return_data)
-  
-  ######################## 
-        # previous = body.get('previous_questions')
-
-        # category = body.get('quiz_category')
-
-        # #load all questions if 'all' is selected
-        # if (category['id'] == 0):
-        #     questions = Question.query.all()
-        # #load questions for specific category
-        # else:
-        #     questions = Question.query.filter_by(category=category['id'].all())
-
-        # get total number of questions
-
-        #pick a random question
-
-
-        #check if question has already been used
-
-        #get random question
-
-        #check if used, execute until new question
-
-            #if all questions used, return success message with no question
-
-        #return question
+            return jsonify({
+                'success': True,
+                'question': new_question
+            })
+        except:
+            abort(422)
+        
+    
 
 #-----------------------------------------------------------
 # Error Handlers
