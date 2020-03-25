@@ -110,19 +110,20 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(questions_after, questions_before + 1)
 
-    def test_422_create_question(self):
-        """test failure of question creation error 422"""
+    def test_400_create_question(self):
+        """test failure of question creation error 400"""
         # get num of questions before post, create question without json data, get num questions after
         questions_before = len(Question.query.all())
 
-        response = self.client.post('/questions', json={}})
+        response = self.client.post('/questions', json={})
         data. json.loads(response.data)
         questions_after = len(Question.query.all())
 
         # check status code, false success message and compare length before and after
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertTrue(questions_before == questions_after)
+        self.assertEqual(data['message'], "bad request")
 
     def test_search_question(self):
         """test success fo searchin questions"""
