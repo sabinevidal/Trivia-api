@@ -237,8 +237,7 @@ There are four types of errors the API will return`;
 ```
 
 #### POST '/questions'
-- Gets 
-- Returns a JSON object with 
+- Creates a new question using JSON request parameters in the database
 - Sample: `curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json" -d '{"question": "How tall is Table Mountain?", "answer": "1085m", "difficulty": 3, "category": "3" }'`
 - Created question:
 ```
@@ -333,33 +332,61 @@ There are four types of errors the API will return`;
 ```
 
 #### POST '/questions/search'
-- Gets 
-- Returns a JSON object with 
-- Sample: `curl http://127.0.0.1:5000/questions/search`
+- Searches for questions using a search term, 
+- Returns a JSON object with paginated questions matching the search term
+- Sample: `curl http://127.0.0.1:5000/questions/search -X POST -H "Content-Type: application/json" -d '{"searchTerm": "artist"}'`
 ```
-
+{
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Escher", 
+      "category": 2, 
+      "difficulty": 1, 
+      "id": 16, 
+      "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+    }, 
+    {
+      "answer": "Jackson Pollock", 
+      "category": 2, 
+      "difficulty": 2, 
+      "id": 19, 
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 2
+}
 ```
 
 #### POST '/quizzes'
-- Gets 
-- Returns a JSON object with 
-- Sample: `curl http://127.0.0.1:5000/questions`
+- Allows user to play the trivia game
+- Uses JSON request parameters of a chosen category and previous questions
+- Returns JSON object with random available questions which are not among previous used questions
+- Sample: `curl http://127.0.0.1:5000/quizzes -X POST -H "Content-Type: application/json" -d '{"previous_questions": [7, 8], "quiz_category": {"type": "Geography", "id": "3"}}'`
 ```
-
+{
+  "question": {
+    "answer": "Agra", 
+    "category": 3, 
+    "difficulty": 2, 
+    "id": 15, 
+    "question": "The Taj Mahal is located in which Indian city?"
+  }, 
+  "success": true
+}
 ```
 
 #### DELETE '/questions/<int:id>'
-- Gets 
-- Returns a JSON object with 
-- Sample: `curl http://127.0.0.1:5000/categories/3/questions`
+- Deletes a question by id using url parameters
+- Returns id of deleted questions if successful
+- Sample: `curl http://127.0.0.1:5000/questions/4 -X DELETE`
 ```
-
+  {
+      "deleted": 4, 
+      "success": true
+  }
 ```
-
-
-
-
-
 
 ## Testing
 To run the tests, run
