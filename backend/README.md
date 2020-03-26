@@ -66,7 +66,7 @@ One note before you delve into your tasks: for each endpoint you are expected to
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
-## API Endpoints
+## API Reference
 
 This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
 
@@ -76,18 +76,92 @@ GET ...
 POST ...
 DELETE ...
 
-GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
 
+### Getting Started 
+Base URL: Currently this application is only hosted locally. The backend is hosted at http://127.0.0.1:5000/
+Authentication: This version does not require authentication or API keys.
+
+### Error Handling
+
+There are four types of errors the API will return`;
+- 400 - bad request
+- 404 - resource not found
+- 422 - unprocessable
+
+### Endpoints
+
+#### GET '/categories'
+- Fetches a dictionary of all available categories.
+- keys are the ids and the value is the corresponding string of the category
+- Request Parameters: None
+- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+- Example JSON response:
 ```
+{
+  "categories: {
+    '1' : "Science",
+    '2' : "Art",
+    '3' : "Geography",
+    '4' : "History",
+    '5' : "Entertainment",
+    '6' : "Sports"
+    },
+  "success": true
+}
+```
+
+GET '/categories/<int:id>/questions'
+- Gets all questions in a specified category (by id)
+- Request Parameters (optional): category_id
+- Returns: A dictionary object with of all questions in a specified category (by id)
+- Example JSON response:
+```
+{
+  
+}
+```
+GET '/categories'
+- 
+- Request Parameters: 
+- Returns: 
+- Example JSON response:
+```
+{
+  
+}
+```
+GET '/categories'
+- 
+- Request Parameters: 
+- Returns: 
+- Example JSON response:
+```
+{
+  
+}
+```
+GET '/categories'
+- 
+- Request Parameters: 
+- Returns: 
+- Example JSON response:
+```
+{
+  
+}
+```
+GET '/categories'
+- 
+- Request Parameters: 
+- Returns: 
+- Example JSON response:
+```
+{
+  
+}
+```
+
+
 
 
 ## Testing
