@@ -3,8 +3,6 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
-import json 
-import sys
 
 from models import setup_db, Question, Category
 

@@ -44,7 +44,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
     def test_404_request_beyond_valid_page(self):
-         """ Tests error if user tries to access nonexistent page """
+        """ Tests error if user tries to access nonexistent page """
         response = self.client().get('/questions?page=1000')
         data = json.loads(response.data)
 
